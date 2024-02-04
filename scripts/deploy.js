@@ -1,32 +1,38 @@
-// We require the Hardhat Runtime Environment explicitly here. This is optional
-// but useful for running the script in a standalone fashion through `node <script>`.
-//
-// You can also run a script with `npx hardhat run <script>`. If you do that, Hardhat
-// will compile your contracts, add the Hardhat Runtime Environment's members to the
-// global scope, and execute the script.
+
 const hre = require("hardhat");
+const { NFT_COLLECTION_CONTRACT_ADDRESS } = require("../constants");
 
 async function main() {
-  const currentTimestampInSeconds = Math.round(Date.now() / 1000);
-  const unlockTime = currentTimestampInSeconds + 60;
+  const FakeNFTMarketplace = await hre.ethers.getContractFactory("FakeNFTMarketplace");
+  const fakeNFTMarketplace = await FakeNFTMarketplace.deploy()
+  await fakeNFTMarketplace.waitForDeployment()
 
-  const lockedAmount = hre.ethers.parseEther("0.001");
+  console.log("FakeNFTMarketPlace contract deployed at",fakeNFTMarketplace.target);
 
-  const lock = await hre.ethers.deployContract("Lock", [unlockTime], {
-    value: lockedAmount,
-  });
+  const NFTDevsDAO = await  hre.ethers.getContractFactory("NFTDevsDAO");
+  const nftDevsDAO = await NFTDevsDAO.deploy(fakeNFTMarketplace.target,
+    NFT_COLLECTION_CONTRACT_ADDRESS,
+    {value : hre.ethers.parseEther("0.001")}
+    )
+  await nftDevsDAO.waitForDeployment()
 
-  await lock.waitForDeployment();
+  console.log("NFTDevsDAO contract deployed at",nftDevsDAO.target);
 
-  console.log(
-    `Lock with ${ethers.formatEther(
-      lockedAmount
-    )}ETH and unlock timestamp ${unlockTime} deployed to ${lock.target}`
-  );
+  await hre.run("verify:verify",{
+    address : nftDevsDAO.target,
+    constructorArguments : [fakeNFTMarketplace.target,
+      NFT_COLLECTION_CONTRACT_ADDRESS
+      ]
+  })
+
+  await hre.run("verify:verify",{
+    address : fakeNFTMarketplace.target,
+    constructorArguments : []
+  })
+  
 }
 
-// We recommend this pattern to be able to use async/await everywhere
-// and properly handle errors.
+
 main().catch((error) => {
   console.error(error);
   process.exitCode = 1;
