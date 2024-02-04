@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: MIT
 pragma solidity 0.8.20;
 
-contract IFakeNFTMarketplace{
+contract FakeNFTMarketplace{
     mapping (uint256 => address) public tokens;
 
     uint256 nftPrice = 0.01 ether;

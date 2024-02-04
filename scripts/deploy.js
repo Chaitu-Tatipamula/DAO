@@ -9,17 +9,17 @@ async function main() {
 
   console.log("FakeNFTMarketPlace contract deployed at",fakeNFTMarketplace.target);
 
-  const NFTDevsDAO = await  hre.ethers.getContractFactory("NFTDevsDAO");
-  const nftDevsDAO = await NFTDevsDAO.deploy(fakeNFTMarketplace.target,
+  const DAO = await  hre.ethers.getContractFactory("DAO");
+  const Dao = await DAO.deploy(fakeNFTMarketplace.target,
     NFT_COLLECTION_CONTRACT_ADDRESS,
     {value : hre.ethers.parseEther("0.001")}
     )
-  await nftDevsDAO.waitForDeployment()
+  await Dao.waitForDeployment()
 
-  console.log("NFTDevsDAO contract deployed at",nftDevsDAO.target);
+  console.log("DAO contract deployed at",Dao.target);
 
   await hre.run("verify:verify",{
-    address : nftDevsDAO.target,
+    address : Dao.target,
     constructorArguments : [fakeNFTMarketplace.target,
       NFT_COLLECTION_CONTRACT_ADDRESS
       ]
